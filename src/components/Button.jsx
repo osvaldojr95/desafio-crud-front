@@ -3,18 +3,7 @@ import styled from "styled-components";
 export default function Button(props) {
   const { width, type, obj, margin, callback } = props;
   return (
-    <Container
-      width={width}
-      type={type}
-      margin={margin}
-      onClick={
-        obj
-          ? (e) => {
-              callback(e, obj);
-            }
-          : callback
-      }
-    >
+    <Container width={width} type={type} margin={margin} onClick={callback}>
       {props.children}
     </Container>
   );

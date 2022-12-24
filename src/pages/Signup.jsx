@@ -38,7 +38,7 @@ export default function Signup() {
             />
             <h3>
               Usuário
-              {emailErrorMessage !== "" ? <span>{emailErrorMessage}</span> : ""}
+              {usuarioErrorMessage !== "" ? <span>{usuarioErrorMessage}</span> : ""}
             </h3>
             <Input
               type={"text"}
@@ -56,7 +56,7 @@ export default function Signup() {
             />
             <h3>
               Repita a senha
-              {emailErrorMessage !== "" ? <span>{emailErrorMessage}</span> : ""}
+              {senhaErrorMessage !== "" ? <span>{senhaErrorMessage}</span> : ""}
             </h3>
             <Input
               type={"text"}

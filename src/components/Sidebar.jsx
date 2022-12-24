@@ -1,22 +1,46 @@
 import styled from "styled-components";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
 import Logo from "./Logo.jsx";
+import Input from "./Input.jsx";
+import Button from "./Button.jsx";
+import { selectUser, login, logout } from "../redux/userSlice.js";
 
 export default function Sidebar(props) {
   const { page } = props;
+  const [user, setUser] = useState("123");
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const currentUser = useSelector(selectUser);
 
-  const login = async (e) => {
+  useEffect(() => {
+    if (!currentUser.user) {
+      navigate("/");
+    }
+    setUser(currentUser.user);
+  }, [dispatch]);
+
+  const signin = async (e) => {
     e.preventDefault();
-    navigate("/home");
+    try {
+      if (email) {
+        dispatch(login({ user: email }));
+        navigate("/home");
+      }
+    } catch (err) {}
   };
 
   const signup = async () => {
     navigate("/signup");
+  };
+
+  const signout = async () => {
+    dispatch(logout());
+    navigate("/");
   };
 
   return (
@@ -24,36 +48,33 @@ export default function Sidebar(props) {
       {page === "signin" ? (
         <form>
           <h2 className="text">Email</h2>
-          <input
+          <Input
+            type={"text"}
             value={email}
-            onChange={(e) => {
-              if (errorMessage !== "") {
-                setErrorMessage("");
-              }
-              setEmail(e.target.value);
-            }}
+            setValue={setEmail}
+            resetMessage={setErrorMessage}
           />
           <h2 className="text space">Senha:</h2>
-          <input
-            type="password"
+          <Input
+            type={"password"}
             value={senha}
-            onChange={(e) => {
-              if (errorMessage !== "") {
-                setErrorMessage("");
-              }
-              setSenha(e.target.value);
-            }}
+            setValue={setSenha}
+            resetMessage={setErrorMessage}
           />
           <p>{errorMessage}</p>
-          <button type="submit" onClick={login}>
+          <Button margin={"20px 0 15px 0"} callback={signin}>
             Entrar
-          </button>
+          </Button>
           <h3 className="text" onClick={signup}>
             Crie sua conta
           </h3>
         </form>
       ) : (
-        <Logo />
+        <>
+          <h1>Usuário: {user}</h1>
+          <h1 onClick={signout}>Sair</h1>
+          <Logo />
+        </>
       )}
     </Container>
   );
@@ -86,15 +107,6 @@ const Container = styled.div`
     margin-bottom: 5px;
   }
 
-  input {
-    width: 100%;
-    height: 35px;
-    color: #ffffff;
-    background-color: #ffffff21;
-    border: none;
-    border-radius: 10px;
-  }
-
   h3 {
     text-align: center;
   }
@@ -110,20 +122,6 @@ const Container = styled.div`
 
   .space {
     margin-top: 10px;
-  }
-
-  button {
-    width: 100%;
-    height: 35px;
-    font-size: 20px;
-    font-weight: bold;
-    border-radius: 10px;
-    color: #c300ff;
-    background-color: #e9e9e9;
-    border: none;
-    box-shadow: 0 0 20px #c300ff, 0 0 30px #c300ff;
-    margin-top: 20px;
-    margin-bottom: 15px;
   }
 
   h3 {

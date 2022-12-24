@@ -21,6 +21,7 @@ const Container = styled.div`
   flex-direction: row;
   justify-content: center;
   align-items: center;
+  margin-top: ${(props) => (props.big ? "0" : "auto")};
 
   div {
     height: ${(props) => (props.big ? "200px" : "80px")};
@@ -34,7 +35,8 @@ const Container = styled.div`
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    border-radius: ${(props) => (props.big ? "70px 0 70px 70px" : "28px 0 28px 28px;")};
+    border-radius: ${(props) =>
+      props.big ? "70px 0 70px 70px" : "28px 0 28px 28px;"};
     box-shadow: var(--neon);
   }
 
