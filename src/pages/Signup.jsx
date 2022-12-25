@@ -1,8 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
 import styled from "styled-components";
 import Button from "../components/Button";
 import Input from "../components/Input";
+import { selectUser, login } from "../redux/userSlice.js";
 
 export default function Signup() {
   const [email, setEmail] = useState("");
@@ -13,6 +15,25 @@ export default function Signup() {
   const [usuarioErrorMessage, setUsuarioErrorMessage] = useState("");
   const [senhaErrorMessage, setSenhaErrorMessage] = useState("");
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const currentUser = useSelector(selectUser);
+
+  useEffect(() => {
+    const verifyLogin = async () => {
+      const infoSerializado = localStorage.getItem("userInfo");
+      if (currentUser.user) {
+        navigate("/home");
+      } else if (infoSerializado) {
+        const user = JSON.parse(infoSerializado);
+        dispatch(login({ user: user.user }));
+        navigate("/home");
+      } else {
+        localStorage.removeItem("userInfo");
+      }
+    };
+    verifyLogin();
+  }, []);
+
 
   const signup = async (e) => {
     e.preventDefault();
@@ -49,7 +70,7 @@ export default function Signup() {
             />
             <h3>Senha</h3>
             <Input
-              type={"text"}
+              type={"password"}
               value={senha}
               setValue={setSenha}
               margin={"10px 0 20px 0"}
@@ -59,7 +80,7 @@ export default function Signup() {
               {senhaErrorMessage !== "" ? <span>{senhaErrorMessage}</span> : ""}
             </h3>
             <Input
-              type={"text"}
+              type={"password"}
               value={senhaRepetida}
               setValue={setSenhaRepetida}
               resetMessage={setSenhaErrorMessage}

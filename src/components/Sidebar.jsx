@@ -2,6 +2,8 @@ import styled from "styled-components";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
+import { FaUserAlt } from "react-icons/fa";
+import { TbLogout } from "react-icons/tb";
 import Logo from "./Logo.jsx";
 import Input from "./Input.jsx";
 import Button from "./Button.jsx";
@@ -9,7 +11,7 @@ import { selectUser, login, logout } from "../redux/userSlice.js";
 
 export default function Sidebar(props) {
   const { page } = props;
-  const [user, setUser] = useState("123");
+  const [user, setUser] = useState("");
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
@@ -18,17 +20,33 @@ export default function Sidebar(props) {
   const currentUser = useSelector(selectUser);
 
   useEffect(() => {
-    if (!currentUser.user) {
-      navigate("/");
-    }
-    setUser(currentUser.user);
-  }, [dispatch]);
+    const verifyLogin = async () => {
+      const infoSerializado = localStorage.getItem("userInfo");
+      if (currentUser.user) {
+        setUser(currentUser.user);
+        navigate("/home");
+      } else if (infoSerializado) {
+        const user = JSON.parse(infoSerializado);
+        dispatch(login({ user: user.user }));
+        setUser(user.user);
+        navigate("/home");
+      } else {
+        localStorage.removeItem("userInfo");
+        navigate("/");
+      }
+    };
+    verifyLogin();
+  }, []);
 
   const signin = async (e) => {
     e.preventDefault();
     try {
       if (email) {
         dispatch(login({ user: email }));
+        localStorage.setItem(
+          "userInfo",
+          JSON.stringify({ user: email, session: "" })
+        );
         navigate("/home");
       }
     } catch (err) {}
@@ -39,12 +57,16 @@ export default function Sidebar(props) {
   };
 
   const signout = async () => {
+    try {
+      // AXIOS LOGOUT
+    } catch (e) {}
     dispatch(logout());
+    localStorage.removeItem("userInfo");
     navigate("/");
   };
 
   return (
-    <Container>
+    <Container page={page}>
       {page === "signin" ? (
         <form>
           <h2 className="text">Email</h2>
@@ -71,8 +93,15 @@ export default function Sidebar(props) {
         </form>
       ) : (
         <>
-          <h1>Usuário: {user}</h1>
-          <h1 onClick={signout}>Sair</h1>
+          <div className="row">
+            <FaUserAlt className="icon user-icon" />
+            <h1>Usuário: {user}</h1>
+          </div>
+          <div className="line"/>
+          <div className="row">
+            <TbLogout className="icon logout-icon" />
+            <h1 onClick={signout}>Sair</h1>
+          </div>
           <Logo />
         </>
       )}
@@ -90,8 +119,34 @@ const Container = styled.div`
   flex-direction: column;
   justify-content: flex-start;
   align-items: flex-start;
-  padding: 30px;
+  padding: ${(props) => (props.page === "signin" ? "30px" : "30px 0 50px 0")};
   z-index: 5;
+
+  .row {
+    height: 50px;
+    width: 100%;
+    padding-left: 30px;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+  }
+
+  .line {
+    height: 2px;
+    width: 100%;
+    box-shadow: var(--neon);
+  }
+
+  .user-icon{
+    font-size: 20px;
+    margin-right: 15px;
+  }
+  
+  .logout-icon{
+    font-size: 28px;
+    margin-right: 8px;
+  }
 
   .text {
     width: 100%;
