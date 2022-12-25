@@ -6,12 +6,31 @@ import Sidebar from "../components/Sidebar.jsx";
 export default function Home() {
   const [annotations, setAnnotations] = useState([
     { id: 1, text: "hello word" },
+    { id: 2, text: "hello word" },
+    { id: 3, text: "hello word" },
+    { id: 4, text: "hello word" },
+    { id: 5, text: "hello word" },
+    { id: 6, text: "hello word" },
+    { id: 7, text: "hello word" },
+    { id: 8, text: "hello word" },
+    { id: 9, text: "hello word" },
+    { id: 10, text: "hello word" },
   ]);
+  const [selected, setSelected] = useState({ id: 0 });
   const [refresh, setRefresh] = useState([]);
 
   const listAnnotations = () => {
     return annotations.map((annotation, index) => {
-      return <Annotation id={index}>{annotation.text}</Annotation>;
+      return (
+        <Annotation
+          selected={selected}
+          setSelected={setSelected}
+          key={index}
+          id={annotation.id}
+        >
+          {annotation.text}
+        </Annotation>
+      );
     });
   };
 
@@ -40,7 +59,11 @@ export default function Home() {
         <h1>Suas anotações:</h1>
         <div className="list">
           {listAnnotations()}
-          <Annotation add={true} />
+          <Annotation
+            add={true}
+            create={createAnnotation}
+            selected={selected}
+          />
         </div>
       </main>
     </Container>
