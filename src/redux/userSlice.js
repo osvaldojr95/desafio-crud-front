@@ -4,24 +4,27 @@ export const userSlice = createSlice({
   name: "user",
   initialState: {
     user: "",
-    session: "",
+    token: "",
   },
   reducers: {
     login: (state, { payload }) => {
       state.user = payload.user;
-      state.session = payload.session;
+      state.token = payload.token;
     },
     logout: (state) => {
       state.user = "";
-      state.session = "";
-      return;
+      state.token = "";
     },
   },
 });
 
 export const { login, logout } = userSlice.actions;
 
-export const selectUser = (state) => state.user;
-export const selectSession = (state) => state.session;
+export const selectUser = (state) => {
+  return state.user.user;
+};
+export const selectToken = (state) => {
+  return state.user.token;
+};
 
 export default userSlice.reducer;

@@ -1,4 +1,5 @@
 import styled from "styled-components";
+import axios from "axios";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
@@ -7,10 +8,10 @@ import { TbLogout } from "react-icons/tb";
 import Logo from "./Logo.jsx";
 import Input from "./Input.jsx";
 import Button from "./Button.jsx";
-import { selectUser, login, logout } from "../redux/userSlice.js";
+import { selectUser, selectToken, login, logout } from "../redux/userSlice.js";
 
 export default function Sidebar(props) {
-  const { page } = props;
+  const { page, setRefresh, edit, setEdit, selected } = props;
   const [user, setUser] = useState("");
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
@@ -18,6 +19,7 @@ export default function Sidebar(props) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const currentUser = useSelector(selectUser);
+  const token = useSelector(selectToken);
 
   useEffect(() => {
     const verifyLogin = async () => {
@@ -27,8 +29,9 @@ export default function Sidebar(props) {
         navigate("/home");
       } else if (infoSerializado) {
         const user = JSON.parse(infoSerializado);
-        dispatch(login({ user: user.user }));
+        dispatch(login({ user: user.user, token: user.token }));
         setUser(user.user);
+        setRefresh([]);
         navigate("/home");
       } else {
         localStorage.removeItem("userInfo");
@@ -38,18 +41,44 @@ export default function Sidebar(props) {
     verifyLogin();
   }, []);
 
+  const showError = (error) => {
+    if (error === "clean") {
+      setErrorMessage("");
+    } else if (error === "email") {
+      setErrorMessage("Insira o email");
+    } else if (error === "password") {
+      setErrorMessage("Insira a senha");
+    } else if (error.status === 404) {
+      setErrorMessage("Email não encontrado");
+    } else if (error.status === 401) {
+      setErrorMessage("Senha incorreta");
+    }
+  };
+
   const signin = async (e) => {
     e.preventDefault();
-    try {
-      if (email) {
-        dispatch(login({ user: email }));
+    if (!email) {
+      showError("email");
+    } else if (!senha) {
+      showError("password");
+    } else {
+      const URL = "http://localhost:5000/sign-in";
+      const obj = { email, password: senha };
+      const config = {};
+      try {
+        const response = await axios.post(URL, obj, config);
+        showError("clean");
+        const { data } = response;
+        dispatch(login({ user: data.user, token: data.token }));
         localStorage.setItem(
           "userInfo",
-          JSON.stringify({ user: email, session: "" })
+          JSON.stringify({ user: data.user, token: data.token })
         );
         navigate("/home");
+      } catch (err) {
+        showError(err.response);
       }
-    } catch (err) {}
+    }
   };
 
   const signup = async () => {
@@ -58,11 +87,38 @@ export default function Sidebar(props) {
 
   const signout = async () => {
     try {
-      // AXIOS LOGOUT
+      const URL = "http://localhost:5000/sign-out";
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      try {
+        await axios.post(URL, {}, config);
+      } catch (err) {}
     } catch (e) {}
     dispatch(logout());
     localStorage.removeItem("userInfo");
     navigate("/");
+  };
+
+  const save = async () => {
+    const URL = `http://localhost:5000/${selected.id}/edit`;
+    const obj = { text: edit };
+    const config = { headers: { Authorization: `Bearer ${token}` } };
+    try {
+      await axios.put(URL, obj, config);
+      setRefresh([]);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const remove = async () => {
+    const URL = `http://localhost:5000/${selected.id}/remove`;
+    const config = { headers: { Authorization: `Bearer ${token}` } };
+    try {
+      await axios.delete(URL, config, {});
+      setRefresh([]);
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   return (
@@ -84,7 +140,7 @@ export default function Sidebar(props) {
             resetMessage={setErrorMessage}
           />
           <p>{errorMessage}</p>
-          <Button margin={"20px 0 15px 0"} callback={signin}>
+          <Button neon={true} margin={"20px 0 15px 0"} callback={signin}>
             Entrar
           </Button>
           <h3 className="text" onClick={signup}>
@@ -97,10 +153,17 @@ export default function Sidebar(props) {
             <FaUserAlt className="icon user-icon" />
             <h1>Usuário: {user}</h1>
           </div>
-          <div className="line"/>
+          <div className="line" />
           <div className="row">
-            <TbLogout className="icon logout-icon" />
-            <h1 onClick={signout}>Sair</h1>
+            <TbLogout onClick={signout} className="icon logout-icon" />
+            <h1 className="pointer" onClick={signout}>Sair</h1>
+          </div>
+          <textarea value={edit} onChange={(e) => setEdit(e.target.value)} />
+          <div className="row">
+            <Button neon={true} callback={save}>
+              Salvar
+            </Button>
+            <Button callback={remove}>Deletar</Button>
           </div>
           <Logo />
         </>
@@ -120,16 +183,21 @@ const Container = styled.div`
   justify-content: flex-start;
   align-items: flex-start;
   padding: ${(props) => (props.page === "signin" ? "30px" : "30px 0 50px 0")};
+  position: fixed;
+  top: 0;
+  left: 0;
   z-index: 5;
 
   .row {
     height: 50px;
     width: 100%;
     padding-left: 30px;
+    padding-right: 30px;
     display: flex;
     flex-direction: row;
     justify-content: flex-start;
     align-items: center;
+    gap: 10px;
   }
 
   .line {
@@ -138,14 +206,15 @@ const Container = styled.div`
     box-shadow: var(--neon);
   }
 
-  .user-icon{
+  .user-icon {
     font-size: 20px;
     margin-right: 15px;
   }
-  
-  .logout-icon{
+
+  .logout-icon {
     font-size: 28px;
     margin-right: 8px;
+    cursor: pointer;
   }
 
   .text {
@@ -160,10 +229,16 @@ const Container = styled.div`
   h2 {
     font-size: 20px;
     margin-bottom: 5px;
+    cursor: default;
   }
 
   h3 {
     text-align: center;
+    cursor: pointer;
+  }
+
+  .pointer {
+    cursor: pointer;
   }
 
   p {
@@ -181,5 +256,17 @@ const Container = styled.div`
 
   h3 {
     font-size: 20px;
+  }
+
+  textarea {
+    width: 240px;
+    height: 300px;
+    color: #ffffff;
+    background-color: #ffffff21;
+    border: none;
+    border-radius: 10px;
+    margin: 40px 30px 0 30px;
+    padding: 10px;
+    resize: none;
   }
 `;

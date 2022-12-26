@@ -1,14 +1,17 @@
 import styled from "styled-components";
 
 export default function Annotation(props) {
-  const { add, selected, setSelected, id, create } = props;
+  const { add, selected, setSelected, id, create, setEdit } = props;
   return (
     <Container
       selected={add ? false : selected.id === id ? true : false}
       onClick={() => {
         if (!add) {
           setSelected({ id });
+          setEdit(props.children);
         } else {
+          setSelected({ id: -1 });
+          setEdit("");
           create();
         }
       }}
@@ -31,4 +34,6 @@ const Container = styled.div`
   justify-content: ${(props) => (props.add ? "center" : "flex-start")};
   align-items: ${(props) => (props.add ? "center" : "flex-start")};
   padding: 10px;
+  margin: 0;
+  cursor: pointer;
 `;

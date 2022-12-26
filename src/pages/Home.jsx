@@ -2,22 +2,16 @@ import { useEffect, useState } from "react";
 import styled from "styled-components";
 import Annotation from "../components/Annotation.jsx";
 import Sidebar from "../components/Sidebar.jsx";
+import { useSelector, useDispatch } from "react-redux";
+import { selectToken } from "../redux/userSlice.js";
+import axios from "axios";
 
 export default function Home() {
-  const [annotations, setAnnotations] = useState([
-    { id: 1, text: "hello word" },
-    { id: 2, text: "hello word" },
-    { id: 3, text: "hello word" },
-    { id: 4, text: "hello word" },
-    { id: 5, text: "hello word" },
-    { id: 6, text: "hello word" },
-    { id: 7, text: "hello word" },
-    { id: 8, text: "hello word" },
-    { id: 9, text: "hello word" },
-    { id: 10, text: "hello word" },
-  ]);
+  const [annotations, setAnnotations] = useState([]);
   const [selected, setSelected] = useState({ id: 0 });
   const [refresh, setRefresh] = useState([]);
+  const [edit, setEdit] = useState("");
+  const token = useSelector(selectToken);
 
   const listAnnotations = () => {
     return annotations.map((annotation, index) => {
@@ -26,7 +20,8 @@ export default function Home() {
           selected={selected}
           setSelected={setSelected}
           key={index}
-          id={annotation.id}
+          id={annotation._id}
+          setEdit={setEdit}
         >
           {annotation.text}
         </Annotation>
@@ -46,15 +41,45 @@ export default function Home() {
 
   // CREATE
   const createAnnotation = async () => {
-    setRefresh([]);
+    const URL = "http://localhost:5000/create";
+    const obj = { text: "" };
+    const config = { headers: { Authorization: `Bearer ${token}` } };
+    try {
+      await axios.post(URL, obj, config);
+      setRefresh([]);
+    } catch (e) {}
   };
 
   // READ
-  useEffect(() => {}, [refresh]);
+  useEffect(() => {
+    const getList = async () => {
+      const URL = "http://localhost:5000/listAll";
+      const obj = {};
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      try {
+        const response = await axios.get(URL, config);
+        const { data } = response;
+        const list = [...data];
+        setAnnotations(list);
+        if (selected.id === -1) {
+          setSelected({ id: list.at(-1)._id });
+        }
+      } catch (e) {}
+    };
+    if (token) {
+      getList();
+    }
+  }, [refresh]);
 
   return (
     <Container>
-      <Sidebar page={"home"} />
+      <Sidebar
+        selected={selected}
+        edit={edit}
+        setEdit={setEdit}
+        setRefresh={setRefresh}
+        page={"home"}
+      />
       <main>
         <h1>Suas anotações:</h1>
         <div className="list">
@@ -63,6 +88,8 @@ export default function Home() {
             add={true}
             create={createAnnotation}
             selected={selected}
+            setSelected={setSelected}
+            setEdit={setEdit}
           />
         </div>
       </main>
@@ -94,7 +121,7 @@ const Container = styled.div`
     }
 
     .list {
-      height: calc(100% - 90px);
+      height: auto;
       width: 100%;
       display: flex;
       flex-direction: row;
@@ -104,7 +131,6 @@ const Container = styled.div`
       flex-grow: 0;
       flex-shrink: 0;
       gap: 30px;
-      overflow-y: scroll;
       padding-bottom: 20px;
     }
   }

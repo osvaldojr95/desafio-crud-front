@@ -1,7 +1,7 @@
 import styled from "styled-components";
 
 export default function Input(props) {
-  const { width, type, margin, value, setValue, resetMessage } = props;
+  const { width, type, height, margin, value, setValue, resetMessage } = props;
   return (
     <Container
       type={type}
@@ -13,6 +13,7 @@ export default function Input(props) {
         setValue(e.target.value);
       }}
       width={width}
+      height={height}
       margin={margin}
     ></Container>
   );
@@ -20,7 +21,7 @@ export default function Input(props) {
 
 const Container = styled.input`
   width: ${(props) => (props.width ? props.width : "100%")};
-  height: 35px;
+  height: ${(props) => (props.height ? props.height : "35px")};
   color: #ffffff;
   background-color: #ffffff21;
   border: none;

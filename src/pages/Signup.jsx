@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import { useSelector, useDispatch } from "react-redux";
 import styled from "styled-components";
 import Button from "../components/Button";
@@ -34,10 +35,43 @@ export default function Signup() {
     verifyLogin();
   }, []);
 
+  const showError = (error) => {
+    if (error === "senhaDiferentes") {
+      setSenhaErrorMessage("Senhas diferentes");
+    } else if (error === "senha") {
+      setSenhaErrorMessage("Insira a senha");
+    } else if (error === "email") {
+      setEmailErrorMessage("Insira o email");
+    } else if (error === "username") {
+      setUsuarioErrorMessage("Insira o usuráio");
+    } else if (error.status === 409 && error.data === "email") {
+      setEmailErrorMessage("Email já existente");
+    } else if (error.status === 409 && error.data === "username") {
+      setUsuarioErrorMessage("Usuário já existente");
+    }
+  };
 
   const signup = async (e) => {
     e.preventDefault();
-    navigate("/home");
+    if (email === "") {
+      showError("email");
+    } else if (senha !== senhaRepetida) {
+      showError("senhaDiferentes");
+    } else if (usuario === "") {
+      showError("username");
+    } else if (senha === "") {
+      showError("senha");
+    } else {
+      const URL = "http://localhost:5000/sign-up";
+      const obj = { username: usuario, email, password: senha };
+      const config = {};
+      try {
+        await axios.post(URL, obj, config);
+        navigate("/home");
+      } catch (err) {
+        showError(err.response);
+      }
+    }
   };
 
   return (
@@ -59,7 +93,11 @@ export default function Signup() {
             />
             <h3>
               Usuário
-              {usuarioErrorMessage !== "" ? <span>{usuarioErrorMessage}</span> : ""}
+              {usuarioErrorMessage !== "" ? (
+                <span>{usuarioErrorMessage}</span>
+              ) : (
+                ""
+              )}
             </h3>
             <Input
               type={"text"}
@@ -87,7 +125,11 @@ export default function Signup() {
               margin={"10px 0 20px 0"}
             />
             <div className="buttons">
-              <Button width={"200px"} margin={"20px 0 15px 0"} callback={signup}>
+              <Button
+                width={"200px"}
+                margin={"20px 0 15px 0"}
+                callback={signup}
+              >
                 Criar conta
               </Button>
               <p
@@ -144,6 +186,11 @@ const Container = styled.div`
     text-align: center;
     text-shadow: var(--neon);
     margin-bottom: 20px;
+    cursor: default;
+  }
+
+  h3 {
+    cursor: default;
   }
 
   span {
@@ -168,5 +215,6 @@ const Container = styled.div`
     justify-content: center;
     align-items: center;
     margin: 20px 0 15px 0;
+    cursor: pointer;
   }
 `;
