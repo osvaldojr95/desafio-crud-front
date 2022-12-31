@@ -62,7 +62,7 @@ export default function Sidebar(props) {
     } else if (!senha) {
       showError("password");
     } else {
-      const URL = "http://localhost:5000/sign-in";
+      const URL = "https://momos-annotation-back.onrender.com/sign-in";
       const obj = { email, password: senha };
       const config = {};
       try {
@@ -87,7 +87,7 @@ export default function Sidebar(props) {
 
   const signout = async () => {
     try {
-      const URL = "http://localhost:5000/sign-out";
+      const URL = "https://momos-annotation-back.onrender.com/sign-out";
       const config = { headers: { Authorization: `Bearer ${token}` } };
       try {
         await axios.post(URL, {}, config);
@@ -99,7 +99,7 @@ export default function Sidebar(props) {
   };
 
   const save = async () => {
-    const URL = `http://localhost:5000/${selected.id}/edit`;
+    const URL = `https://momos-annotation-back.onrender.com/${selected.id}/edit`;
     const obj = { text: edit };
     const config = { headers: { Authorization: `Bearer ${token}` } };
     try {
@@ -111,7 +111,7 @@ export default function Sidebar(props) {
   };
 
   const remove = async () => {
-    const URL = `http://localhost:5000/${selected.id}/remove`;
+    const URL = `https://momos-annotation-back.onrender.com/${selected.id}/remove`;
     const config = { headers: { Authorization: `Bearer ${token}` } };
     try {
       await axios.delete(URL, config, {});

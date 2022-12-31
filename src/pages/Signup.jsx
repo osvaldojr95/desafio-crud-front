@@ -62,7 +62,7 @@ export default function Signup() {
     } else if (senha === "") {
       showError("senha");
     } else {
-      const URL = "http://localhost:5000/sign-up";
+      const URL = "https://momos-annotation-back.onrender.com/sign-up";
       const obj = { username: usuario, email, password: senha };
       const config = {};
       try {

@@ -41,7 +41,7 @@ export default function Home() {
 
   // CREATE
   const createAnnotation = async () => {
-    const URL = "http://localhost:5000/create";
+    const URL = "https://momos-annotation-back.onrender.com/create";
     const obj = { text: "" };
     const config = { headers: { Authorization: `Bearer ${token}` } };
     try {
@@ -53,7 +53,7 @@ export default function Home() {
   // READ
   useEffect(() => {
     const getList = async () => {
-      const URL = "http://localhost:5000/listAll";
+      const URL = "https://momos-annotation-back.onrender.com/listAll";
       const obj = {};
       const config = { headers: { Authorization: `Bearer ${token}` } };
       try {
